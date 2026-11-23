@@ -1,0 +1,26 @@
+.Rproj.user
+.Rhistory
+.RData
+.RDataTmp
+.Ruserdata
+.Renviron
+.httr-oauth
+.secrets/
+
+# local configuration (copy config.example.yml)
+config.yml
+.sensitive-patterns
+
+# all data stays local / on Drive: never commit data or outputs
+data/cleaned/*
+!data/cleaned/.gitkeep
+data/output/*
+!data/output/.gitkeep
+**/*.xlsx
+**/*.csv
+**/*.txt
+
+# reference tables that are safe to version
+!data/input/analysis_codes/analysis_codes.xlsx
+!templates/*.xlsx
+!templates/*.csv

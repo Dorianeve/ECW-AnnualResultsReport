@@ -1,0 +1,45 @@
+# CONFIGURATION FILE (YAML)
+# Copy this file to `config.yml` and customise it. `config.yml` is git-ignored.
+# Run all scripts from the project root (open AnnualResultsReport.Rproj).
+# Contains NO secrets: never put passwords or tokens here.
+
+# --- Input files (all relative to data/input/, unless an absolute path is given) ---
+# cr_clean.xlsx, pr_clean.xlsx and grants_db.csv are written into data/input/ by the Combiner
+# (download Combiner and AnnualResultsReport side by side in the same parent folder).
+combiner_cr: "cr_clean.xlsx"        # output of the Combiner CR flow
+combiner_pr: "pr_clean.xlsx"        # output of the Combiner PR flow
+grants_db: "grants_db.csv"          # export from the GMS
+mne_approval: "mne_tracker.xlsx"    # MnE reports tracker. Relative to data/input/, or an absolute path
+                                    # (e.g. a Google Drive for Desktop path such as "G:/My Drive/ARR/mne_tracker.xlsx")
+sheet_mne: "Results_Reports_Auto"   # sheet of the MnE tracker to read
+codes: "analysis_codes.xlsx"        # in data/input/analysis_codes/
+
+# --- Yearly parameters (change every reporting year) ---
+report_year: "2025"
+previous_report_year: "2024"
+source_cr: "CR25"                   # "Source of data" parameter
+source_pr: "PR25"
+report_year_number: 2025
+annual: 10                          # exercise encoding (2022 = 4/5, 2023 = 6/7, 2024 = 8/9, 2025 = 10/11 ...)
+cumulative: 11
+past_annual: 8
+past_cumulative: 9
+ex_com_approval_date_cutoff: "2025-01-01"
+
+# --- Strategic plan (used by mne_cleaning.R to flag the programmes that are active in the plan) ---
+strategic_plan_start: "2023-01-01"  # a programme counts if it ENDS after this date ...
+strategic_plan_end: "2025-12-31"    # ... and STARTS on or before this one. Keep equal to the Combiner settings
+                                    # (`reporting: strategic_plan`).
+
+# --- Reporting windows ---
+achieved_as_rw: 7                   # pr_patch.R: reports marked "Achieved" count as this reporting window number (RW7)
+
+# --- Year specific patches ---
+cr_exclude_leadgrn: []              # LeadGRNs removed from the CR analysis, e.g. ["XX-ECW-XXX-00-XXX-XXX"]
+pr_exclude_leadgrn: []              # LeadGRNs removed from the PR analysis (same format)
+
+# --- Optional: Google Drive API sync (not needed with Drive for Desktop) ---
+gdrive:
+  enabled: false
+  input_folder_id: ""               # ID of the Drive folder holding the input files
+  output_folder_id: ""              # ID of the Drive folder where outputs are uploaded
