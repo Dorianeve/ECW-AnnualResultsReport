@@ -14,7 +14,7 @@ If you are new, read it from top to bottom once. After that, use the table of co
 -   [Before you commit or publish](#before-you-commit-or-publish)
 -   [Style](#style)
 
-Related pages: [Debugging](debugging.md) (when something breaks), [The run reports](diagnostics.md), [Glossary](glossary.md), and `AGENTS.md` in the main folder (a short brief for AI assistants).
+Related pages: [Debugging](debugging.md) (when something breaks), [The run reports](diagnostics.md), [Glossary](glossary.md), and [`developers/AGENTS.md`](../developers/AGENTS.md) (a short brief for AI assistants).
 
 ------------------------------------------------------------------------
 
@@ -186,7 +186,7 @@ There is no automatic test suite yet. The safety net is this routine. **Use it f
 
     Open the two reports in `data/output/diagnostics/*/latest/report.md`. No new "Attention" point should appear that you cannot explain.
 
-**A faster test with a sample.** A full run takes several minutes. For a quick test, keep all the rows of a share of the LeadGRNs (for example 75%) in `cr_clean.xlsx` and `pr_clean.xlsx`, and use the **same sample** before and after the change. A sample that is too small can stop a check with an error such as "Column `Percentage %` doesn't exist". That is a limit of the sample, not of your change.
+**A faster test with a sample.** A full run takes several minutes. For a quick test, keep all the rows of a share of the LeadGRNs (for example 75%) in `cr_clean.xlsx` and `pr_clean.xlsx`, and use the **same sample** before and after the change. A sample that is too small can still stop a check, because some column or value does not occur in it. That is a limit of the sample, not of your change: read the message and the "Failed flows" part of the report.
 
 ------------------------------------------------------------------------
 
@@ -296,7 +296,7 @@ The reports are made by `R/diagnostics/`. A step appears in the report only if i
 | Reading the CSV again | `read.csv()` turns `Covid-19related` into `Covid.19related`, and dates into text. | Use the names that `read.csv()` gives. |
 | `recode_source()` | A label with two years, such as `CR2024`, becomes `CR20` (the first year found wins). It is how the old scripts worked. | Write the label as `CR24` at the source. |
 | The `LeadGRN` sheet of the priority file | It is read, but the filter that uses it is switched off. | Keep the sheet. Do not rely on it. |
-| PR checks and small data | `pr_data_checks.R` stops if no row has the unit "Percentage %" after the filters. | It only happens with very small samples. |
+| A value that does not occur | `pr_data_checks.R` used to stop when no row had the unit "Percentage %" after the filters (this happens early in a reporting year). It is fixed for the units, but other checks may have the same weakness. | If a check stops with "Column ... doesn't exist", look at which value is missing in the filtered data, and make the script add the empty column (see the fix for `unit_overtime` in `pr_data_checks.R`). |
 | The PR `Number checks.xlsx` | It is the real output of `pr_number_checks.R`. | Keep it. (The CR flow has no such file.) |
 | Line endings | Some files have Windows line endings, some Linux. Both work. | Do not change the line endings of a whole file in a commit: it makes the change hard to read. |
 | Backslashes | If you write code through a shell here-document, backslashes can be halved. | In new regular expressions use `[.]` instead of `\\.` and `[[:space:]]` instead of `\\s`. Check the file afterwards. |

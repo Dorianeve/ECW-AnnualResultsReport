@@ -181,6 +181,12 @@ unit_overtime <- df %>%
   summarise(Total = n(), .groups = 'drop') %>%
   pivot_wider(names_from = unit, values_from = Total)
 
+# a unit that does not occur at all in the data (for example early in a reporting year) has no column:
+# add it as empty, so that the count below works (with both columns present nothing changes)
+for (u in c("Number #", "Percentage %")) {
+  if (!u %in% names(unit_overtime)) unit_overtime[[u]] <- NA_integer_
+}
+
 unit_overtime <- unit_overtime %>%
   mutate(non_empty_count = rowSums(!is.na(select(., `Number #`, `Percentage %`)) & 
                                      select(., `Number #`, `Percentage %`) != "")) %>%

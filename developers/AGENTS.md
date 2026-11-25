@@ -1,5 +1,7 @@
 # AGENTS.md: guide for AI assistants working on this repository
 
+(This file is in the folder `developers/`. All paths below start at the project root, the folder with `config.example.yml`. If your tool does not load this file by itself, tell the assistant to read it first.)
+
 Read this first. It tells you what the project is, how to run it, how to debug it, and which rules you must not break.
 
 ## What this project is
@@ -21,6 +23,7 @@ scripts/prep_env.R      loads packages, R/, functions/ and turns config.yml into
 R/                      diagnostics (reports), trace helpers, setup check, compare, debug mode
 functions/              helper functions used by the scripts (analysis tables, Google Drive sync)
 templates/              empty examples of the input files the user prepares
+developers/             this brief (AGENTS.md, CLAUDE.md), todo_next_year.R (plan for the MnE tracker), make_synthetic_mne_tracker.R (fake tracker for test runs)
 docs/                   diagnostics.md (run reports), debugging.md (read it), development.md (how to change the code safely, recipes), glossary.md
 .githooks/pre-commit    blocks commits with data, settings, passwords, e-mails, personal paths or real GRNs (enable: git config core.hooksPath .githooks)
 data/                   input, cleaned, output: confidential, git-ignored
@@ -54,7 +57,8 @@ R is at `C:/Program Files/R/R-4.3.2/bin/Rscript.exe` on the main Windows machine
 -   **Lazy arguments:** if you pass a global variable into a function that then runs a legacy script, `force()` it first, otherwise the script's `rm(list = ls())` deletes it before it is used (this bit us once in `R/diagnostics/`).
 -   **Settings are plain variables.** `config.yml` is read with `yaml::read_yaml` and every key becomes a global variable (`report_year`, `annual`, ...). A new setting is available by its name as soon as it is in `config.yml`.
 -   **The year comes from `config.yml`, not from the code.** Exercise codes (`encode_exercise()`), source labels (`recode_source()`), the `ActiveinYYYY` window (`active_year_cols()`), the strategic-plan dates and `achieved_as_rw` are settings or helpers in `R/utils/years.R`. Never write a year into a script. What is still fixed in the code is listed in `docs/debugging.md` section 5 (for example `pr_patch.R` numbers only RW1-RW6 and `Achieved`). Always run `check_setup.R` when the year or a setting changes.
--   **The MnE tracker is read from two header rows** (`startRow = 4` in `mne_cleaning.R`, `skip = 6` in the checks). Both must work.
+-   **The MnE tracker** is read in seven places, in two different ways (`startRow = 4` in `mne_cleaning.R`, `skip = 6` in the six check scripts), and "approved" is the text `Completed` / `Waived` in those scripts. Only the checks use it; the analysis does not. Read `docs/mne-tracker.md` before touching any of it. **It is to be redone next year: follow `developers/todo_next_year.R`.**
+-   **Test runs without the real tracker:** `Rscript developers/make_synthetic_mne_tracker.R` builds a fake one from `grants_db.csv`. Do the test run in a **copy** of the project folder (the run history in `data/output/diagnostics/` would otherwise treat the test as the "last run"), and **never** use the fake tracker for a real run: it makes almost every programme "approved".
 -   **Column names lose their spaces** in the cleaning (`gsub("\\s+", "", ...)`): `Type of investment` becomes `Typeofinvestment`.
 -   **Check scripts apply `log_decisions.xlsx`** inside the script (9 places). `diag_decisions()` is called just before, to count what is hidden.
 -   **CR number checks** write two workbooks, `Number checks - Reached.xlsx` and `Number checks - Targeted.xlsx`. (Older versions also saved a half-way `Number checks.xlsx` in the CR folder; it was removed because everything in it is in the two real files. The PR flow still writes its own `Number checks.xlsx`: that one is real.)

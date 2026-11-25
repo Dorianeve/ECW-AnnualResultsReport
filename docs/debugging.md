@@ -163,13 +163,13 @@ When you **do** mean to change the results (for example a new year), compare any
 
 An assistant is useful for reading error messages, finding the line to change and writing a small fix. Rules that keep it safe:
 
-**Give it:** `AGENTS.md` (it explains the project and the rules), the text of the error, `report.md`, `findings.csv` and `run.log` from the run reports, and the output of `check_setup.R`. These contain names, counts and percentages, but no data rows and no passwords.
+**Give it:** `developers/AGENTS.md` (it explains the project and the rules), the text of the error, `report.md`, `findings.csv` and `run.log` from the run reports, and the output of `check_setup.R`. These contain names, counts and percentages, but no data rows and no passwords.
 
 **Do not give it:** the data files, `config.yml` (it may hold paths and, in older versions, passwords), the log of decisions, or `changes.csv` (it has grant numbers). If the assistant runs on your computer and reads files itself, tell it the same.
 
 **A good first message:**
 
-> This is the ARR project (see AGENTS.md). I ran `scripts/run_cleaning.R` and got the error below. Here are `check_setup.R`, the cleaning `report.md` and `run.log`. Find the cause, change as little code as possible, and tell me how to check that the results of the other flows did not change (`scripts/compare_outputs.R`).
+> This is the ARR project (see developers/AGENTS.md). I ran `scripts/run_cleaning.R` and got the error below. Here are `check_setup.R`, the cleaning `report.md` and `run.log`. Find the cause, change as little code as possible, and tell me how to check that the results of the other flows did not change (`scripts/compare_outputs.R`).
 
 **Ask it to:**
 
@@ -193,4 +193,4 @@ An assistant is useful for reading error messages, finding the line to change an
 -   [ ] Run `Rscript scripts/run_checks.R`; open one check workbook and the checks report.
 -   [ ] Read [the run reports](diagnostics.md) and this page.
 -   [ ] Make a backup of the results, change something small, run again and use `compare_outputs.R`. Now you know how the safety net works.
--   [ ] Read `AGENTS.md` if you will work with an AI assistant.
+-   [ ] Read `developers/AGENTS.md` if you will work with an AI assistant.

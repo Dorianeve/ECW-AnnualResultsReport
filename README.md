@@ -17,8 +17,11 @@ You do not need to know R to use it. You need to open the project, change a few 
 ## The short version
 
 1.  Download **this project and the Combiner side by side** (see below). Run the Combiner. It copies three files into `data/input/`.
+
 2.  Copy `config.example.yml` to `config.yml` and fill it in (section 2).
-3.  Put your own two files in `data/input/`: the log of decisions and the priority codes (section 6). The MnE tracker comes later (section 3).
+
+3.  Put your own two files in `data/input/`: the log of decisions and the priority codes (section 6). The MnE tracker comes later (section 3): until it is there, do a test run with a made-up tracker (see below).
+
 4.  Check everything before you start:
 
     ``` bash
@@ -73,7 +76,7 @@ You do not copy them by hand. The order of work is always: **1. run the Combiner
 It is a plain text file. Each line is `name: value`. There are no passwords in it.
 
 | Setting | What it is | Example |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | `combiner_cr`, `combiner_pr` | Names of the Combiner files in `data/input/` | `cr_clean.xlsx` |
 | `grants_db` | Name of the GMS export in `data/input/` | `grants_db.csv` |
 | `mne_approval` | The MnE reports tracker. A file name in `data/input/`, **or** the full path to the file (for example on Google Drive) | `G:/My Drive/ARR/mne_tracker.xlsx` |
@@ -99,11 +102,11 @@ It is a plain text file. Each line is `name: value`. There are no passwords in i
 The folder `data/input/` is not on GitHub because the files are confidential. Empty examples of the Excel and csv files you must prepare are in the folder `templates/`.
 
 | File | Where it goes | Where it comes from | Template |
-|----|----|----|----|
+|------------------|------------------|------------------|------------------|
 | `cr_clean.xlsx` | `data/input/` | Combiner (copied here automatically) | none |
 | `pr_clean.xlsx` | `data/input/` | Combiner (copied here automatically) | none |
 | `grants_db.csv` | `data/input/` | Combiner (copied here automatically; it is the processed GMS list) | none |
-| MnE reports tracker | anywhere (set `mne_approval`) | Grants Management | none |
+| MnE reports tracker | anywhere (set `mne_approval`) | Grants Management | a **made-up** one for tests: `developers/make_synthetic_mne_tracker.R` |
 | `log_decisions.xlsx` | `data/input/log_decisions/` | You (see section 6) | `templates/log_decisions.xlsx` |
 | `priority_grn_codes.xlsx` | `data/input/patch/` | You (see section 6) | `templates/priority_grn_codes.xlsx` |
 | `patch_units.csv` | `data/input/patch/` | You | `templates/patch_units.csv` |
@@ -111,7 +114,15 @@ The folder `data/input/` is not on GitHub because the files are confidential. Em
 
 The example rows in the templates are fake. Delete them and add your own.
 
-*Note about the MnE tracker:* the scripts expect the same layout every year (the table starts at a fixed row). If the layout changes, tell whoever maintains the code.
+**The MnE tracker, in short.** It says which reports are approved. The checks look only at approved programmes (status `Completed` or `Waived`); the analysis does not read it. The scripts expect a fixed layout: some empty rows, then the header. If the layout changes, the checks stop. **How it is used, and what to do when it changes: [docs/mne-tracker.md](docs/mne-tracker.md).** The plan for next year is in [developers/todo_next_year.R](developers/todo_next_year.R).
+
+**No tracker yet? Do a test run with a made-up one.** This tests the whole flow, but it is **not** a real check:
+
+``` bash
+Rscript developers/make_synthetic_mne_tracker.R
+```
+
+It builds a fake tracker from your own `grants_db.csv` (it never overwrites a file) and writes `data/input/mne_tracker_SYNTHETIC.xlsx`. Set `mne_approval: "mne_tracker_SYNTHETIC.xlsx"` in `config.yml`, run `Rscript scripts/check_setup.R`, then run the flow as usual. **Never use it for a real run:** it makes almost every programme "approved", so the checks would hide problems. Do the test in a **copy** of the project folder, so that the test does not become the "last run" that later runs are compared with.
 
 ------------------------------------------------------------------------
 
@@ -242,12 +253,12 @@ It says which analysis codes (indicators) are used in the **PR** checks and in t
 
 **The rule: only the column `Priority` decides, and only the value `1` counts.**
 
-| `Priority` in the `Codes` sheet | What happens to the code |
-|----|----|
-| `1` | **Used.** It is checked and analysed. |
-| `0` | Left out. |
-| empty cell | Left out. |
-| anything else (text, `Yes`, `2`) | Left out. |
+| `Priority` in the `Codes` sheet  | What happens to the code              |
+|----------------------------------|---------------------------------------|
+| `1`                              | **Used.** It is checked and analysed. |
+| `0`                              | Left out.                             |
+| empty cell                       | Left out.                             |
+| anything else (text, `Yes`, `2`) | Left out.                             |
 
 How the scripts apply it:
 
@@ -258,16 +269,16 @@ How the scripts apply it:
 
 The columns in the file:
 
--   **`Analysis code`**: the code, as written in the PR data. One row for each code, no duplicates.
--   **`Priority`**: the column that decides (see the rule above). It must be called exactly `Priority`.
--   **`Level`**: what the code counts (Child, Teacher, School, Caregiver, Policy). It is carried into the analysis.
--   **Any other column** (for example `Priority23`, `Priority24`, `Indicator`) is **not read**. You can keep old years' choices in extra columns as a record.
--   **Sheet `LeadGRN`** (column `Lead Grantee GRN`): the scripts read it, but **they do not filter by it at the moment**, because the filter is switched off in the code. Keep the sheet in the file.
+- **`Analysis code`**: the code, as written in the PR data. One row for each code, no duplicates.
+- **`Priority`**: the column that decides (see the rule above). It must be called exactly `Priority`.
+- **`Level`**: what the code counts (Child, Teacher, School, Caregiver, Policy). It is carried into the analysis.
+- **Any other column** (for example `Priority23`, `Priority24`, `Indicator`) is **not read**. You can keep old years' choices in extra columns as a record.
+- **Sheet `LeadGRN`** (column `Lead Grantee GRN`): the scripts read it, but **they do not filter by it at the moment**, because the filter is switched off in the code. Keep the sheet in the file.
 
 **Two things to watch**
 
--   A code that is in the PR data but **not** in the `Codes` sheet is left out too, without a message. When a new code appears, add a row for it.
--   A wrong value in `Priority` (for example `Yes`) does not give an error: the code is simply left out. Use only `1` and `0`.
+- A code that is in the PR data but **not** in the `Codes` sheet is left out too, without a message. When a new code appears, add a row for it.
+- A wrong value in `Priority` (for example `Yes`) does not give an error: the code is simply left out. Use only `1` and `0`.
 
 **Every new reporting year:** keep last year's choice in an extra column (for example copy `Priority` to `Priority25`), then set the column `Priority` to `1` or `0` for the new year. Check the number of codes with `1`: the checks report shows how many rows each check looked at.
 
@@ -280,7 +291,7 @@ A table of the correct unit (for example `Number #`) for old reports where the u
 ## 7. What you get (outputs)
 
 | What | Where | Notes |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | Cleaned data | `data/cleaned/*.csv` | Overwritten at every run, so you always have the latest |
 | Cleaning log | `data/output/cr/` or `pr/` `<date>/cleaning log.txt` | Counts of every category |
 | Check files | `data/output/cr/<date>/` and `data/output/pr/<date>/` | See below |
@@ -292,7 +303,7 @@ A table of the correct unit (for example `Number #`) for old reports where the u
 **The check files**
 
 | Flow | Files |
-|----|----|
+|------------------------------------|------------------------------------|
 | CR | `Data checks.xlsx`, `New checks.xlsx`, `Number checks - Reached.xlsx`, `Number checks - Targeted.xlsx` |
 | PR | `Data checks.xlsx`, `Number checks.xlsx` |
 
@@ -331,7 +342,7 @@ When a new reporting year starts:
 
 1.  Run the **Combiner** first (it must be in the folder next to this project, see the top of this page).
 2.  Check that `cr_clean.xlsx`, `pr_clean.xlsx` and `grants_db.csv` in `data/input/` have today's date. If not, the Combiner did not find this project: see its troubleshooting page.
-3.  Put the new MnE tracker in place and check `mne_approval` and `sheet_mne`.
+3.  Put the new MnE tracker in place and check `mne_approval` and `sheet_mne`. **The tracker needs work every year**: follow the plan in [developers/todo_next_year.R](developers/todo_next_year.R) and read [docs/mne-tracker.md](docs/mne-tracker.md).
 4.  Change the yearly settings in `config.yml`: `report_year`, `previous_report_year`, `report_year_number`, `source_cr`, `source_pr`, `annual`, `cumulative`, `past_annual`, `past_cumulative`, `ex_com_approval_date_cutoff`, and, if they changed, `strategic_plan_start`, `strategic_plan_end` and `achieved_as_rw`. **No script has to be edited for a new year.** `Rscript scripts/check_setup.R` tells you if the numbers do not agree with each other.
 5.  Update `cr_exclude_leadgrn` and `pr_exclude_leadgrn` (empty them if last year's exclusions do not apply).
 6.  Update `priority_grn_codes.xlsx` (copy last year's `Priority` column to an extra column, then set `Priority` to `1` / `0` for the new year; see section 6) and `log_decisions.xlsx` (remove old entries).
@@ -356,7 +367,7 @@ During the checking period you repeat this:
 ## 11. When something goes wrong
 
 | What you see | What it means | What to do |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | `config.yml not found` | You are not in the project folder, or you did not make the settings file | Open the `.Rproj`, and copy `config.example.yml` to `config.yml` |
 | `cannot open file ... data/input/...` | An input file is missing or has another name | Check section 3 and the file names in `config.yml` |
 | `cleaned file is older than the Combiner input` (checks report) | You have a new Combiner file but did not clean it | Run `scripts/run_cleaning.R` again |
@@ -369,7 +380,7 @@ During the checking period you repeat this:
 
 More detail on the reports: [docs/diagnostics.md](docs/diagnostics.md).
 
-**For debugging, new settings, a new year, or a new colleague** (also one who works with an AI assistant): read [docs/debugging.md](docs/debugging.md). It has the list of error messages we know, the places where a year is written into the code, how to look inside a script (`arr_debug()`), and how to prove that a change did not alter the results (`scripts/compare_outputs.R`). AI assistants should start with [AGENTS.md](AGENTS.md).
+**For debugging, new settings, a new year, or a new colleague** (also one who works with an AI assistant): read [docs/debugging.md](docs/debugging.md). It has the list of error messages we know, the places where a year is written into the code, how to look inside a script (`arr_debug()`), and how to prove that a change did not alter the results (`scripts/compare_outputs.R`). AI assistants should start with [developers/AGENTS.md](developers/AGENTS.md).
 
 ------------------------------------------------------------------------
 
@@ -391,7 +402,7 @@ AnnualResultsReport/
 ├─ functions/                helper functions (analysis tables, Google Drive download)
 ├─ templates/                empty examples of the files you prepare
 ├─ docs/                     the documentation (see "Read more" below)
-├─ AGENTS.md                 guide for AI assistants (CLAUDE.md points to it)
+├─ developers/               notes for developers and AI assistants (AGENTS.md, CLAUDE.md, to-do for next year)
 ├─ .githooks/pre-commit      stops a commit that holds data, passwords, e-mails or real GRNs
 ├─ .sensitive-patterns.example  words that must never be committed (copy to .sensitive-patterns)
 ├─ data/
@@ -406,6 +417,7 @@ AnnualResultsReport/
 ## 13. What this project does not do (yet)
 
 - It does not run the Combiner. Run the Combiner first: it puts the files in `data/input/`.
+- **The MnE tracker is not finished.** The code reads it in seven places and expects a fixed layout. It will be redone next year (one reader, settings instead of text in the scripts): see [developers/todo_next_year.R](developers/todo_next_year.R). Until then, the checks need a tracker with the 2025 layout, or the made-up one for tests.
 - The analysis step does not write a run report.
 - Everything runs one step after the other, so a full run takes several minutes.
 - The checks are not sent to Airtable any more. The Excel files and the checks report are the result.
@@ -416,23 +428,24 @@ AnnualResultsReport/
 
 You can change the code, but follow a few rules, because the Excel files are used by other people and the data is confidential. The short version:
 
--   **Never change the format of the Excel outputs** (sheets, columns, order).
--   **No year, grant number (GRN), name or path in the code.** Use `config.yml`.
--   **No data and no passwords in the repository.** Turn on the commit check once: `git config core.hooksPath .githooks`.
--   **Make the smallest change that works,** and add a `trace_step()` after any step that can change the number of rows.
--   **Prove that nothing else changed:** run before and after, then `Rscript scripts/compare_outputs.R <before> <after>`. The results must be `IDENTICAL`.
+- **Never change the format of the Excel outputs** (sheets, columns, order).
+- **No year, grant number (GRN), name or path in the code.** Use `config.yml`.
+- **No data and no passwords in the repository.** Turn on the commit check once: `git config core.hooksPath .githooks`.
+- **Make the smallest change that works,** and add a `trace_step()` after any step that can change the number of rows.
+- **Prove that nothing else changed:** run before and after, then `Rscript scripts/compare_outputs.R <before> <after>`. The results must be `IDENTICAL`.
 
-[docs/development.md](docs/development.md) has the details: how a script is built, how to test a change, and step-by-step recipes (add a setting, a check, an analysis table, a new year, more reporting windows, a change of the MnE tracker). If you work with an AI assistant, give it [AGENTS.md](AGENTS.md) first.
+[docs/development.md](docs/development.md) has the details (the folder [developers/](developers/) holds the notes for AI assistants and the to-do for next year): how a script is built, how to test a change, and step-by-step recipes (add a setting, a check, an analysis table, a new year, more reporting windows, a change of the MnE tracker). If you work with an AI assistant, give it [developers/AGENTS.md](developers/AGENTS.md) first.
 
 ------------------------------------------------------------------------
 
 ## Read more
 
 | Document | Read it to... |
-|----|----|
+|------------------------------------|------------------------------------|
 | [The run reports](docs/diagnostics.md) | understand the cleaning report and the checks report |
 | [Debugging](docs/debugging.md) | find out what is wrong when a run fails, handle a new setting or a new year, and work with an AI assistant |
 | [For developers](docs/development.md) | change the code safely and test the change |
+| [The MnE tracker](docs/mne-tracker.md) | know how the tracker is used and what to do when it changes |
 | [Glossary](docs/glossary.md) | look up a word used in this project |
-| [AGENTS.md](AGENTS.md) | brief an AI assistant before it works on the code |
+| [developers/AGENTS.md](developers/AGENTS.md) | brief an AI assistant before it works on the code |
 | `templates/` | start the files you prepare by hand |
