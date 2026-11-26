@@ -69,6 +69,15 @@ You do not copy them by hand. The order of work is always: **1. run the Combiner
 4.  **Put your input files** in the folder `data/input/` (see section 3).
 5.  Run the code. The first run installs the R packages it needs. This can take a few minutes.
 
+**Which computer?** The project was built and tested on **Windows** with R 4.3.2. It should also work on Linux, but the R packages (especially `tidyverse`) need some system libraries, and they are **not** installed by R. If you use Linux, or WSL (Windows Subsystem for Linux), install them first. On Ubuntu or Debian (in WSL you are usually already `root`, so leave out `sudo`):
+
+``` bash
+sudo apt update
+sudo apt install -y build-essential libcurl4-openssl-dev libssl-dev libxml2-dev libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev libpng-dev libtiff-dev libjpeg-dev
+```
+
+The first run then compiles the R packages, which can take 10 to 20 minutes. Without these libraries, R stops with "there is no package called tidyverse". Also note that WSL reads files from the Windows disk (`/mnt/c/...`) slowly, so the Excel files take longer to read than in Windows R.
+
 ------------------------------------------------------------------------
 
 ## 2. The settings file (`config.yml`)
@@ -76,7 +85,7 @@ You do not copy them by hand. The order of work is always: **1. run the Combiner
 It is a plain text file. Each line is `name: value`. There are no passwords in it.
 
 | Setting | What it is | Example |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | `combiner_cr`, `combiner_pr` | Names of the Combiner files in `data/input/` | `cr_clean.xlsx` |
 | `grants_db` | Name of the GMS export in `data/input/` | `grants_db.csv` |
 | `mne_approval` | The MnE reports tracker. A file name in `data/input/`, **or** the full path to the file (for example on Google Drive) | `G:/My Drive/ARR/mne_tracker.xlsx` |
@@ -102,7 +111,7 @@ It is a plain text file. Each line is `name: value`. There are no passwords in i
 The folder `data/input/` is not on GitHub because the files are confidential. Empty examples of the Excel and csv files you must prepare are in the folder `templates/`.
 
 | File | Where it goes | Where it comes from | Template |
-|------------------|------------------|------------------|------------------|
+|----|----|----|----|
 | `cr_clean.xlsx` | `data/input/` | Combiner (copied here automatically) | none |
 | `pr_clean.xlsx` | `data/input/` | Combiner (copied here automatically) | none |
 | `grants_db.csv` | `data/input/` | Combiner (copied here automatically; it is the processed GMS list) | none |
@@ -291,7 +300,7 @@ A table of the correct unit (for example `Number #`) for old reports where the u
 ## 7. What you get (outputs)
 
 | What | Where | Notes |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | Cleaned data | `data/cleaned/*.csv` | Overwritten at every run, so you always have the latest |
 | Cleaning log | `data/output/cr/` or `pr/` `<date>/cleaning log.txt` | Counts of every category |
 | Check files | `data/output/cr/<date>/` and `data/output/pr/<date>/` | See below |
@@ -303,7 +312,7 @@ A table of the correct unit (for example `Number #`) for old reports where the u
 **The check files**
 
 | Flow | Files |
-|------------------------------------|------------------------------------|
+|----|----|
 | CR | `Data checks.xlsx`, `New checks.xlsx`, `Number checks - Reached.xlsx`, `Number checks - Targeted.xlsx` |
 | PR | `Data checks.xlsx`, `Number checks.xlsx` |
 
@@ -367,7 +376,7 @@ During the checking period you repeat this:
 ## 11. When something goes wrong
 
 | What you see | What it means | What to do |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | `config.yml not found` | You are not in the project folder, or you did not make the settings file | Open the `.Rproj`, and copy `config.example.yml` to `config.yml` |
 | `cannot open file ... data/input/...` | An input file is missing or has another name | Check section 3 and the file names in `config.yml` |
 | `cleaned file is older than the Combiner input` (checks report) | You have a new Combiner file but did not clean it | Run `scripts/run_cleaning.R` again |
@@ -441,7 +450,7 @@ You can change the code, but follow a few rules, because the Excel files are use
 ## Read more
 
 | Document | Read it to... |
-|------------------------------------|------------------------------------|
+|----|----|
 | [The run reports](docs/diagnostics.md) | understand the cleaning report and the checks report |
 | [Debugging](docs/debugging.md) | find out what is wrong when a run fails, handle a new setting or a new year, and work with an AI assistant |
 | [For developers](docs/development.md) | change the code safely and test the change |

@@ -10,9 +10,14 @@ if(!require(Hmisc)){
   library(Hmisc)
 }
 
-if(!require(tidyverse)){
-  install.packages('tidyverse')
-  library(tidyverse)
+# The "core" of the tidyverse, one package at a time and in the same order as library(tidyverse)
+# attaches them. The scripts only use these. The `tidyverse` bundle itself is NOT needed, and on
+# Linux / WSL it fails to install without many system libraries (fontconfig, freetype, ...).
+for (pkg in c("ggplot2", "tibble", "tidyr", "readr", "purrr", "dplyr", "stringr", "forcats", "lubridate")) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
 }
 
 if(!require(stringdist)){
