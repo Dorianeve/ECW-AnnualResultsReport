@@ -19,9 +19,10 @@ scripts/run_cleaning.R  cleaning with a run report;  scripts/run_checks.R  check
 scripts/check_setup.R   "doctor": checks settings, inputs, columns and years BEFORE a run
 scripts/compare_outputs.R  compares two output folders (csv + every xlsx sheet)
 scripts/{cr,pr,mne}/    the flow scripts (cleaning/, checks/, analysis/)
+scripts/airtable/       optional Airtable sync (log of decisions in, checks out; see README section 8)
 scripts/prep_env.R      loads packages, R/, functions/ and turns config.yml into variables
 R/                      diagnostics (reports), trace helpers, setup check, compare, debug mode
-functions/              helper functions used by the scripts (analysis tables, Google Drive sync)
+functions/              helper functions used by the scripts (analysis tables, Google Drive / Airtable sync)
 templates/              empty examples of the input files the user prepares
 developers/             this brief (AGENTS.md, CLAUDE.md), todo_next_year.R (plan for the MnE tracker), make_synthetic_mne_tracker.R (fake tracker for test runs)
 docs/                   diagnostics.md (run reports), debugging.md (read it), development.md (how to change the code safely, recipes), glossary.md
@@ -46,7 +47,7 @@ R is at `C:/Program Files/R/R-4.3.2/bin/Rscript.exe` on the main Windows machine
 2.  **Prove it.** After a change, run the flow on the same inputs and use `scripts/compare_outputs.R` against a backup made before. Say what you ran and what the result was. Never say "it should work".
 3.  **Smallest change.** The scripts are long and top-level (not functions). Do not reformat, rename or restructure them while fixing a bug.
 4.  **No data in the repository or in your messages.** `data/`, `config.yml`, `log_decisions.xlsx`, `priority_grn_codes.xlsx`, `patch_units.csv` hold confidential data and real grant numbers (GRNs). Never commit them, never paste rows from them. Use the files in `templates/` (fake rows) for examples and tests.
-5.  **No secrets.** There are no passwords or tokens in this project. Do not add any. Secrets would go in `.Renviron`, never in `config.yml` or the code.
+5.  **No secrets in `config.yml` or the code.** The only secret in this project is the optional Airtable token, read with `Sys.getenv("AIRTABLE_TOKEN")` from `.Renviron` (see `.Renviron.example`). Never add a secret anywhere else.
 6.  **Follow `docs/development.md`** for how to change code, with step-by-step recipes (new setting, check, analysis table, year). The commit hook blocks real GRNs: put exclusions in `config.yml` (`cr_exclude_leadgrn`, `pr_exclude_leadgrn`), never in a script.
 7.  **Do not delete** outputs, inputs or the user's backups. Do not run `git push` or change the git history unless asked.
 8.  **Say when something is not tested.** The Google Drive API sync (`functions/gdrive_sync.R`) has not been tested.

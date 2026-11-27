@@ -43,3 +43,11 @@ gdrive:
   enabled: false
   input_folder_id: ""               # ID of the Drive folder holding the input files
   output_folder_id: ""              # ID of the Drive folder where outputs are uploaded
+
+# --- Optional: Airtable sync (log of decisions in, checks out) ---
+# The API token is a secret: never put it here. Set AIRTABLE_TOKEN in .Renviron instead
+# (copy .Renviron.example, then restart R). base_id and table_name are not secrets.
+airtable:
+  enabled: false
+  base_id: ""                       # the base id, starts with "app..."
+  table_name: ""                    # the table that holds the log of decisions / checks

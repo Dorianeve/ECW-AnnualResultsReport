@@ -1,0 +1,4 @@
+# Copy this file to .Renviron (git-ignored) and fill in the token. Restart R after
+# changing it. Never put the token in config.yml or in any script.
+
+AIRTABLE_TOKEN=

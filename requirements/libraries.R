@@ -72,3 +72,14 @@ if(!require(ggplot2)) {
 if(!require(magrittr)) {
   install.packages(("magrittr"))
 }
+
+# used by the optional Airtable sync (scripts/airtable/, functions/airtable_sync.R)
+if(!require(httr)) {
+  install.packages('httr')
+  library(httr)
+}
+
+if(!require(jsonlite)) {
+  install.packages('jsonlite')
+  library(jsonlite)
+}

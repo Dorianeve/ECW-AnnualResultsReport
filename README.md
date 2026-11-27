@@ -101,6 +101,7 @@ It is a plain text file. Each line is `name: value`. There are no passwords in i
 | `achieved_as_rw` | Reports marked "Achieved" count as this reporting window number (used in `pr_patch.R`) | `7` |
 | `cr_exclude_leadgrn`, `pr_exclude_leadgrn` | LeadGRNs to leave out of the CR / PR analysis this year (a list, can be empty) | `[]` |
 | `gdrive` | Only for the Google Drive download (see section 8) | `enabled: false` |
+| `airtable` | Only for the Airtable sync (see section 8): `base_id`, `table_name`. The token is **not** here, see below | `enabled: false` |
 
 **Every new reporting year you must change the "yearly" settings.** See the checklist in section 9.
 
@@ -343,6 +344,22 @@ gdrive:
 
 The folder id is the last part of the folder's web address. The first time, a browser window asks you to sign in to Google. The input files are then downloaded into `data/input/` once, at the start of every R session. (This part has not been tested yet.)
 
+### Airtable sync (log of decisions in, checks out)
+
+Optional: review the checks in Airtable instead of (or alongside) the Excel files. When turned on, `cr_main.R` / `pr_main.R` pull the log of decisions from Airtable before the checks run, and push the checks back to Airtable afterwards (see `scripts/airtable/`).
+
+1.  In `config.yml`, set:
+
+    ``` yaml
+    airtable:
+      enabled: true
+      base_id: "appXXXXXXXXXXXXXX"      # the base id, starts with "app"
+      table_name: "Checks"              # the table that holds the log of decisions / checks
+    ```
+
+2.  Copy `.Renviron.example` to `.Renviron` and set `AIRTABLE_TOKEN` to a personal access token with access to that base. Restart R. **Never put the token in `config.yml`.**
+3.  Leave `airtable: enabled: false` (the default) to skip the sync entirely: the flow then works exactly as in section 4, Excel files only.
+
 ------------------------------------------------------------------------
 
 ## 9. The yearly checklist
@@ -407,13 +424,15 @@ AnnualResultsReport/
 │   ├─ compare_outputs.R     did a change alter the results?
 │   ├─ prep_env.R            loads settings, packages and functions
 │   ├─ cr/  pr/  mne/        the scripts of each flow: cleaning, checks, analysis
+│   ├─ airtable/             optional Airtable sync (log of decisions in, checks out)
 ├─ R/                        run reports, setup check, debug mode, output comparison
-├─ functions/                helper functions (analysis tables, Google Drive download)
+├─ functions/                helper functions (analysis tables, Google Drive / Airtable sync)
 ├─ templates/                empty examples of the files you prepare
 ├─ docs/                     the documentation (see "Read more" below)
 ├─ developers/               notes for developers and AI assistants (AGENTS.md, CLAUDE.md, to-do for next year)
 ├─ .githooks/pre-commit      stops a commit that holds data, passwords, e-mails or real GRNs
 ├─ .sensitive-patterns.example  words that must never be committed (copy to .sensitive-patterns)
+├─ .Renviron.example         secrets template (copy to .Renviron; only the Airtable token so far)
 ├─ data/
 │   ├─ input/                your input files (not on GitHub)
 │   ├─ cleaned/              cleaned data (not on GitHub)
@@ -429,7 +448,6 @@ AnnualResultsReport/
 - **The MnE tracker is not finished.** The code reads it in seven places and expects a fixed layout. It will be redone next year (one reader, settings instead of text in the scripts): see [developers/todo_next_year.R](developers/todo_next_year.R). Until then, the checks need a tracker with the 2025 layout, or the made-up one for tests.
 - The analysis step does not write a run report.
 - Everything runs one step after the other, so a full run takes several minutes.
-- The checks are not sent to Airtable any more. The Excel files and the checks report are the result.
 
 ------------------------------------------------------------------------
 
